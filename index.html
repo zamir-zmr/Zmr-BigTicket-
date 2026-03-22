@@ -388,9 +388,10 @@ body.dark-mode {
 <div class="header">
     <div id="badgeTag"></div>
     <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;"></h1>
-        <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">3 April 2026</h1>
-    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">Coming Soon...</h1>
-    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">BIG TICKET DRAW RESULT</h1>
+    
+    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">Coming Soon..</h1>
+        <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">BIG TICKET DRAW</h1>
+
 
         
         
@@ -423,13 +424,16 @@ body.dark-mode {
 
 <div id="liveSection" style="display: none; width: 100%; margin-bottom: 25px;">
     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px; background: #000; border: 2px solid #ff4d4d; box-shadow: 0 5px 20px rgba(255, 77, 77, 0.4);">
-        <iframe 
-            id="ytPlayer"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-            src="" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            allowfullscreen>
-        </iframe>
+
+<iframe 
+    id="ytPlayer"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+    src="" 
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+    allowfullscreen>
+</iframe>
+
+
     </div>
     <div style="text-align: center; margin-top: 10px;">
         <span style="color: #ff4d4d; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
@@ -1110,12 +1114,21 @@ window.addEventListener('DOMContentLoaded', () => {
 function getEmbedUrl(link) {
     if (!link) return null;
     let videoId = "";
+    
+    // Link se ID nikalne ka logic
     if (link.includes("v=")) videoId = link.split("v=")[1].split("&")[0];
     else if (link.includes("be/")) videoId = link.split("be/")[1].split("?")[0];
-    else if (link.includes("embed/")) return link;
-    
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1` : null;
+    else if (link.includes("embed/")) return link; 
+
+    if (videoId) {
+        // Zaroori Parameters: 
+        // controls=1 (Volume buttons dikhayega)
+        // mute=1 (Mobile par autoplay ke liye zaroori hai)
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&showinfo=0`;
+    }
+    return null;
 }
+
 
 // 2. Admin side: Firebase mein save karne ka function
 function updateLiveLink() {
