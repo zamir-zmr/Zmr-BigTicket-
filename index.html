@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ash Cafe | Big Ticket Admin Pro</title>
+    <title>Ash Cafe | Big Ticket</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -47,11 +47,6 @@
         }
 
         /* List Styling */
-        .member-item {
-            background: white; display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 18px; border-radius: 12px; margin-bottom: 10px;
-            border: 1px solid var(--border); transition: 0.2s;
-        }
 
         .m-id { color: var(--primary-blue); font-weight: bold; margin-right: 12px; font-family: monospace; }
         .m-name { color: var(--primary-blue); font-weight: 600; font-size: 15px; }
@@ -96,10 +91,6 @@
 @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
 
 /* लिस्ट आइटम के लिए एंट्री एनीमेशन */
-.member-item {
-    animation: slideUp 0.4s ease forwards;
-    opacity: 0;
-}
 
 @keyframes slideUp {
     from { transform: translateY(20px); opacity: 0; }
@@ -228,7 +219,7 @@ body.dark-mode {
 }
 
 /* Member Section Colors */
-.member-section { border: 1px solid #00ced1; }
+.section { border: 1px solid #00ced1; }
 .member-section .section-title { color: #00ced1; }
 .btn-add-member {
     background: #00ced1;
@@ -345,31 +336,35 @@ body.dark-mode {
 }
 
 
-/* List items ke liye smooth transition */
 
-/* Normal State: No Colors, Only Border */
 
-/* .member-item {
-    transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
-    background: transparent !important; Pura transparent
-    margin-bottom: 8px;
-    border-radius: 12px;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1); Halka border
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
- */
-/* Dragging State: Only Border visible */
-
-/* Placeholder State (Ghost) */
 .sortable-ghost {
     opacity: 0.1;
     background: transparent !important;
     border: 2px dashed var(--teal) !important;
+
 }
 
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.member-item {
+            background: white; display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 18px; border-radius: 12px; margin-bottom: 10px;
+            border: 1px solid var(--border); transition: 0.2s;
+            animation: slideUp 0.4s ease forwards;
+            opacity: 0;
+        }
+
+
+/* Member Name: Always Blue */
+.m-name {
+    color: var(--teal) !important;
+    font-weight: 600;
+    font-size: 16px;
+    margin-left: 10px;
+}
 
 
 
@@ -388,9 +383,16 @@ body.dark-mode {
 
 
 <div class="container">
-    <div class="header">
-        <div id="badgeTag"></div>
-        <h1 style="font-size: 20px; color: #444; margin: 5px 0;">BIG TICKET MANAGER</h1>
+    
+
+<div class="header">
+    <div id="badgeTag"></div>
+    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;"></h1>
+    
+    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">BIG TICKET DRAW</h1>
+
+        
+        
         <div class="group-tickets-container">
     <div class="ticket-card">🎫 <span id="t1_val">---</span></div>
     <div class="ticket-card">🎫 <span id="t2_val">---</span></div>
@@ -417,22 +419,48 @@ body.dark-mode {
     </div>
 </div>
 
-<div id="liveSection" style="display: none; width: 100%; margin-bottom: 20px;">
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000; border: 2px solid #ff4d4d; box-shadow: 0 0 15px rgba(255, 77, 77, 0.3);">
+
+<div id="liveSection" style="display: none; width: 100%; margin-bottom: 25px;">
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px; background: #000; border: 2px solid #ff4d4d; box-shadow: 0 5px 20px rgba(255, 77, 77, 0.4);">
         <iframe 
             id="ytPlayer"
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
             src="" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowfullscreen>
         </iframe>
     </div>
-    <div style="text-align: center; margin-top: 8px;">
+    <div style="text-align: center; margin-top: 10px;">
         <span style="color: #ff4d4d; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
             <i class="fas fa-circle" style="font-size: 8px; vertical-align: middle; animation: blink 1s infinite;"></i> Live Draw Stream
         </span>
     </div>
 </div>
+
+
+<script>
+
+
+
+// Offline Support: Page khulne par memory se uthao
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem("permanent_yt_link");
+    if (saved) {
+        document.getElementById('ytPlayer').src = saved;
+        document.getElementById('liveSection').style.display = 'block';
+    }
+});
+
+
+</script>
+
+<style>
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+</style>
 
 
 
@@ -464,6 +492,7 @@ body.dark-mode {
         <p style="text-align:center; color:#999;">Connecting to Database...</p>
     </div>
 </div>
+
 
 <div class="security-btn" onclick="handleSecurity()"><i class="fas fa-shield-alt"></i></div>
 
@@ -551,28 +580,6 @@ function confirmDelete() {
 // 2. Jab Modal ke "YES" button pe click ho
 
 // 3. YouTube Live Embed Logic (Taki screen par video chale)
-firebase.database().ref("liveSettings").on("value", (snap) => {
-    const data = snap.val();
-    const section = document.getElementById('liveSection');
-    const player = document.getElementById('ytPlayer');
-
-    if(data && data.url) {
-        section.style.display = "block";
-        let vId = "";
-        if(data.url.includes("v=")) {
-            vId = data.url.split("v=")[1].split("&")[0];
-        } else if(data.url.includes("youtu.be/")) {
-            vId = data.url.split("youtu.be/")[1].split("?")[0];
-        }
-
-        if(vId) {
-            player.src = "https://www.youtube.com/embed/" + vId + "?rel=0&modestbranding=1";
-        }
-    } else {
-        section.style.display = "none";
-        player.src = "";
-    }
-});
 
 
 
@@ -632,61 +639,56 @@ function showToast(message, type = "success") {
     }, 3000);
 }
 
+// 1. Authorized Admins ki list
+const adminNames = {
+    "Admin 1": "Zamir",
+    "Admin 2": "Sojib", // Ab Admin 2 ki jagah ABC dikhega
+    "Admin 3": "Peter"
+};
+
+
 function attemptLogin() {
     const user = document.getElementById('loginUser').value.trim();
     const pass = document.getElementById('loginPass').value;
 
     if (user === "") { 
-        showToast("कृपया अपना नाम दर्ज करें", "error");
+        showToast("Enter Your Name", "error");
         return; 
     }
-    
-    if (pass === "2026") {
-        adminLog.once('value', (snap) => {
-            const admins = snap.val() || {};
-            let existingID = null;
 
-            // 1. चेक करें कि क्या यह नाम पहले से रजिस्टर है?
-            Object.keys(admins).forEach(id => {
-                if (admins[id].name && admins[id].name.toLowerCase() === user.toLowerCase()) {
-                    existingID = id; 
-                }
-            });
-
-            if (existingID) {
-                // पुराने यूजर को उसकी पुरानी ID ही दें
-                localStorage.setItem("ash_admin_id", existingID);
-                localStorage.setItem("ash_admin_name", user);
-                
-                adminLog.child(existingID).update({
-                    loginTime: new Date().toLocaleString()
-                }).then(() => {
-                    showToast("स्वागत है! आप " + existingID + " के रूप में लॉग इन हैं।");
-                    setTimeout(() => location.reload(), 1500);
-                });
-            } else {
-                // नया नाम होने पर ही नई ID (Admin 2, 3...) बनाएं
-                const totalAdmins = Object.keys(admins).length;
-                const newID = "Admin " + (totalAdmins + 1);
-
-                adminLog.child(newID).set({
-                    name: user,
-                    loginTime: new Date().toLocaleString(),
-                    access: "active"
-                }).then(() => {
-                    localStorage.setItem("ash_admin_id", newID);
-                    localStorage.setItem("ash_admin_name", user);
-                    showToast("नया एडमिन (" + newID + ") रजिस्टर हो गया है!");
-                    setTimeout(() => location.reload(), 1500);
-                });
+    if (pass === "admin") {
+        // CHECK: Kya ye naam hamari list mein hai?
+        let foundID = null;
+        Object.keys(adminNames).forEach(id => {
+            if (adminNames[id].toLowerCase() === user.toLowerCase()) {
+                foundID = id; // Agar mil gaya toh uski ID (Admin 1, 2 etc) nikal lo
             }
         });
+
+        if (foundID) {
+            // Success: Naam mil gaya
+            localStorage.setItem("ash_admin_id", foundID); // Firebase ke liye ID (Admin 1)
+            localStorage.setItem("ash_admin_name", adminNames[foundID]); // Display ke liye Naam (Zamir)
+            
+            adminLog.child(foundID).update({
+                name: adminNames[foundID],
+                loginTime: new Date().toLocaleString()
+            }).then(() => {
+                showToast("Welcome, " + adminNames[foundID], "success");
+                setTimeout(() => location.reload(), 1200);
+            });
+        } else {
+            // Fail: Agar koi 4th person try karega
+            showToast("Access Denied: You are not an authorized Admin", "error");
+        }
     } else {
-        showToast("गलत पासवर्ड! कृपया पुनः प्रयास करें।", "error");
+        showToast("Invalid Password", "error");
     }
 }
+
+
 function enableAdmin() {
-    isAdmin = true;
+    isAdmin = false;
     // 'flex' ki jagah 'block' ya 'flex' jo bhi aapne id par lagaya hai
     document.getElementById('adminPanel').style.display = 'block'; 
     document.getElementById('ticketAdmin').style.display = 'block';
@@ -744,7 +746,7 @@ function closeModals() {
 // जब यूजर "हाँ" बटन दबाएगा
 function confirmLogout() {
     closeModals(); // मॉडल बंद करें
-    showToast("सफलतापूर्वक लॉगआउट हो रहा है...", "error"); // प्रोफेशनल टोस्ट दिखाएं
+    showToast("Log out successfully", "error"); // प्रोफेशनल टोस्ट दिखाएं
     
     setTimeout(() => {
         localStorage.clear();
@@ -756,7 +758,7 @@ function confirmLogout() {
 
 function logoutSystem() {
     // प्रोफेशनल मैसेज दिखाएं
-    showToast("सफलतापूर्वक लॉगआउट हो गया!", "error"); 
+    showToast("Logging out successfully!", "error"); 
     
     // थोड़ा इंतज़ार करें ताकि यूजर मैसेज देख सके, फिर क्लियर करें
     setTimeout(() => {
@@ -805,46 +807,7 @@ if(localStorage.getItem('theme') === 'dark') {
 }
 
 // 3. रेंडर फंक्शन में थोड़ा सुधार (एनीमेशन के लिए)
-function render() {
-    const container = document.getElementById('listContainer');
-    container.innerHTML = "";
-    
-    if (window.allMemberData) {
-        let globalIndex = 1;
-        Object.keys(window.allMemberData).forEach(adminKey => {
-            const members = window.allMemberData[adminKey];
-            Object.keys(members).forEach(memberKey => {
-                container.innerHTML += `
-    <div class="member-item" data-id="${memberKey}" style="display: flex; align-items: center; justify-content: space-between; width: 100%; transition: transform 0.2s ease;">
-        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-            <div class="drag-handle" style="cursor: grab; color: var(--teal); opacity: 0.6; padding: 5px;">
-                <i class="fas fa-grip-lines"></i>
-            </div>
-            
-            <div>
-                <span class="m-id" style="background: var(--teal); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 12px; transition: all 0.2s;">
-                    ${globalIndex.toString().padStart(2, '0')}
-                </span>
-                <span class="m-name" style="font-weight: 500; margin-left: 5px; color: white;">${members[memberKey].name}</span>
-                <small style="display:block; font-size:9px; color:#64748b; margin-top: 2px;">Ref: ${adminKey}</small>
-            </div>
-        </div>
 
-        ${isAdmin ? `
-            <div style="display:flex; gap:8px; align-items: center;">
-                <button class="btn-del" 
-                        style="background: rgba(255, 71, 71, 0.1); color: #ff4747; border: 1px solid #ff4747; padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;" 
-                        onclick="delItem('${adminKey}', '${memberKey}')">
-                    DELETE
-                </button>
-            </div>` : ''}
-    </div>`;
-
-                globalIndex++;
-            });
-        });
-    }
-}
 
 // Naya Member aur Ticket add karne ke liye
 function addNewMember() {
@@ -867,35 +830,68 @@ function addNewMember() {
 // --- YOUTUBE LIVE PLAYER LOGIC ---
 
 // Admin panel se link update karne ka function
+
+
 function updateLiveLink() {
-    const link = document.getElementById('ytAdminLink').value.trim();
-    if(!link) { showToast("Please paste a link first", "error"); return; }
-    
-    // Firebase mein "liveSettings" ke andar save karega
-    firebase.database().ref("liveSettings").set({ url: link })
-    .then(() => showToast("Live Link Updated!"))
-    .catch(() => showToast("Update Failed", "error"));
+    const link = document.getElementById('ytAdminLink').value;
+    if (!link) return showToast("Paste link first!", "error");
+
+    let videoId = "";
+    // YouTube ID nikalne ka asaan tarika
+    if (link.includes("v=")) videoId = link.split("v=")[1].split("&")[0];
+    else if (link.includes("be/")) videoId = link.split("be/")[1];
+
+    if (videoId) {
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        
+        firebase.database().ref("liveSettings").set({
+            youtubeUrl: embedUrl
+        }).then(() => {
+            localStorage.setItem("saved_yt_link", embedUrl); // Permanent Save
+            showToast("Live Updated!", "success");
+            
+            // Turant box dikhane ke liye
+            document.getElementById('liveSection').style.display = 'block';
+            document.getElementById('ytPlayer').src = embedUrl;
+        });
+    }
 }
 
 // User screen par video dikhane aur embed karne ka logic
 
 // YouTube Live Logic
 
-firebase.database().ref("liveSettings").on("value", (snap) => {
-    const data = snap.val();
-    const player = document.getElementById('ytPlayer');
-    const section = document.getElementById('liveSection');
 
-    if(data && data.url) {
-        section.style.display = "block";
-        let vId = data.url.includes('v=') ? data.url.split('v=')[1].split('&')[0] : data.url.split('youtu.be/')[1];
-        if(vId) {
-            player.src = "https://www.youtube.com/embed/" + vId + "?rel=0&modestbranding=1";
+// YouTube Live Stream Listener
+
+// YouTube Live Stream Fix
+firebase.database().ref("liveSettings/youtubeUrl").on("value", (snap) => {
+    const liveUrl = snap.val();
+    const liveSection = document.getElementById('liveSection');
+    const player = document.getElementById('ytPlayer');
+
+    // DEBUG: Console mein check karein link aa raha hai ya nahi
+    console.log("YouTube Link from Firebase:", liveUrl);
+
+    if (liveUrl && liveUrl.length > 10) {
+        // 1. Link set karein
+        if(player) player.src = liveUrl;
+        
+        // 2. Box ko FORCE SHOW karein
+        if(liveSection) {
+            liveSection.style.display = "block";
+            liveSection.style.visibility = "visible";
+            liveSection.style.opacity = "1";
         }
+        
+        // 3. Offline ke liye save karein
+        localStorage.setItem("saved_yt_link", liveUrl);
     } else {
-        section.style.display = "none";
-        player.src = "";
+        // Agar link khali hai toh hide karein
+        if(liveSection) liveSection.style.display = 'none';
     }
+}, (error) => {
+    console.error("Firebase Error:", error);
 });
 
 
@@ -904,21 +900,7 @@ firebase.database().ref("liveSettings").on("value", (snap) => {
 // Tickets load karne ke liye
 
 // Firebase se Group Tickets load karna (Sabke liye)
-firebase.database().ref("groupTickets").on("value", (snap) => {
-    const data = snap.val();
-    if(data) {
-        document.getElementById('t1_val').innerText = data.t1 || "EMPTY";
-        document.getElementById('t2_val').innerText = data.t2 || "EMPTY";
-        document.getElementById('t3_val').innerText = data.t3 || "EMPTY";
-        
-        // Admin inputs mein bhi purana data bhar dena taki edit kar sakein
-        if(document.getElementById('t1')) {
-            document.getElementById('t1').value = data.t1 || "";
-            document.getElementById('t2').value = data.t2 || "";
-            document.getElementById('t3').value = data.t3 || "";
-        }
-    }
-});
+
 
 // Admin function to Save Tickets
 
@@ -947,21 +929,50 @@ function saveSingleTicket(ticketId) {
 }
 
 // Data load karne wala logic (Wahi rahega par t1_val check ke sath)
+
 firebase.database().ref("groupTickets").on("value", (snap) => {
     const data = snap.val();
     if(data) {
-        if(document.getElementById('t1_val')) document.getElementById('t1_val').innerText = data.t1 || "---";
-        if(document.getElementById('t2_val')) document.getElementById('t2_val').innerText = data.t2 || "---";
-        if(document.getElementById('t3_val')) document.getElementById('t3_val').innerText = data.t3 || "---";
+        // 1. Data ko phone ki memory (LocalStorage) mein save karein offline ke liye
+        localStorage.setItem("offline_tickets", JSON.stringify(data));
         
-        // Admin inputs mein purana data dikhana
-        if(document.getElementById('t1')) document.getElementById('t1').value = data.t1 || "";
-        if(document.getElementById('t2')) document.getElementById('t2').value = data.t2 || "";
-        if(document.getElementById('t3')) document.getElementById('t3').value = data.t3 || "";
+        // 2. UI update karne ka function call karein
+        updateTicketUI(data);
+    }
+}, (error) => {
+    // Agar net nahi hai toh saved data load karein
+    const savedTickets = localStorage.getItem("offline_tickets");
+    if(savedTickets) {
+        updateTicketUI(JSON.parse(savedTickets));
+    }
+});
+
+// UI update karne ke liye ek common function (duplication hatane ke liye)
+function updateTicketUI(data) {
+    if(!data) return;
+
+    // Display values
+    if(document.getElementById('t1_val')) document.getElementById('t1_val').innerText = data.t1 || "---";
+    if(document.getElementById('t2_val')) document.getElementById('t2_val').innerText = data.t2 || "---";
+    if(document.getElementById('t3_val')) document.getElementById('t3_val').innerText = data.t3 || "---";
+    
+    // Admin input values (taki type na karna pade bar bar)
+    if(document.getElementById('t1')) document.getElementById('t1').value = data.t1 || "";
+    if(document.getElementById('t2')) document.getElementById('t2').value = data.t2 || "";
+    if(document.getElementById('t3')) document.getElementById('t3').value = data.t3 || "";
+}
+
+// Page load hote hi offline data turant dikhao
+window.addEventListener('DOMContentLoaded', () => {
+    const savedTickets = localStorage.getItem("offline_tickets");
+    if(savedTickets) {
+        updateTicketUI(JSON.parse(savedTickets));
     }
 });
 
 // 1. Sortable ko initialize karne ka sahi tarika
+
+
 function initSortable() {
     const el = document.getElementById('listContainer');
     if (!el) return;
@@ -969,36 +980,50 @@ function initSortable() {
     if (window.sortableInstance) window.sortableInstance.destroy();
 
     window.sortableInstance = new Sortable(el, {
-        animation: 200,             // Fast animation speed (ms)
-        swapThreshold: 0.5,         // Adha rasta cross karte hi niche wala upar aa jayega
-        invertSwap: true,           // Reverse movement ko smooth banata hai
+        animation: 150,
+        delay: 500,             // Long press (0.5s) to start drag
+        delayOnTouchOnly: true,
+        disabled: !isAdmin,      // Only Admin can drag
         ghostClass: 'sortable-ghost',
-        chosenClass: 'sortable-chosen',
         dragClass: 'sortable-drag',
-        forceFallback: true,        // Mobile par live preview ke liye zaroori
+        forceFallback: true,
         
-        // Jaise hi position change hogi, ye event fire hoga
-        onUpdate: function() {
-            recalculateNumbers(); // Numbers ko turant update karega
+        // Jab position change ho rahi ho (Live)
+        onChange: function() {
+            recalculateNumbers(); 
         },
         
+        // Jab drag khatam ho jaye
         onEnd: function() {
             recalculateNumbers();
-            showToast("Position Updated!", "success");
+            showToast("Position Updated", "success");
         }
     });
 }
 
-// Har item ka number (01, 02) turant update karne ke liye
 function recalculateNumbers() {
-    const allItems = document.querySelectorAll('.member-item');
+    // Sirf asli members ko ginein, ghost ko chhod dein
+    const allItems = document.querySelectorAll('.member-item:not(.sortable-ghost)'); 
     allItems.forEach((item, index) => {
-        const idBadge = item.querySelector('.m-id');
-        if (idBadge) {
-            idBadge.innerText = (index + 1).toString().padStart(2, '0');
+        const idSpan = item.querySelector('.m-id');
+        if (idSpan) {
+            // Sahi sequence: 01, 02, 03...
+            idSpan.innerText = (index + 1).toString().padStart(2, '0');
         }
     });
 }
+
+function recalculateNumbers() {
+    // Sirf unhi items ko count karein jo 'sortable-ghost' nahi hain
+    const allItems = document.querySelectorAll('.member-item:not(.sortable-ghost)'); 
+    allItems.forEach((item, index) => {
+        const idSpan = item.querySelector('.m-id');
+        if (idSpan) {
+            idSpan.innerText = (index + 1).toString().padStart(2, '0');
+        }
+    });
+}
+
 
 // 2. Numbers ko auto-update karne ka function
 function updateListNumbers() {
@@ -1012,30 +1037,53 @@ function updateListNumbers() {
     });
 }
 
+// Yahan aap apni zaroorat ke hisaab se naam add kar sakte hain
+
 // 3. Render function mein update
+
 function render() {
     const container = document.getElementById('listContainer');
+    if (!container) return;
     container.innerHTML = "";
     
     if (window.allMemberData) {
         let globalIndex = 1;
         Object.keys(window.allMemberData).forEach(adminKey => {
             const members = window.allMemberData[adminKey];
+            
+            // LOGIC: Agar adminNames mein naam milta hai toh wo dikhao, 
+            // nahi toh jo ID (adminKey) hai wahi dikhao.
+            const displayAdminName = adminNames[adminKey] || adminKey;
+
             Object.keys(members).forEach(memberKey => {
                 container.innerHTML += `
-                    <div class="member-item" style="cursor: move; touch-action: none;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="m-id" style="background: var(--teal); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">
-                                ${globalIndex.toString().padStart(2, '0')}
-                            </span>
-                            <span class="m-name" style="font-weight: 500;">${members[memberKey].name}</span>
-                        </div>
-                        ${isAdmin ? `
-                            <div style="display:flex; gap:8px; align-items: center;">
-                                <i class="fas fa-grip-vertical" style="color:#555; font-size: 18px; margin-right: 5px;"></i>
-                                <button class="btn-del" onclick="delItem('${adminKey}', '${memberKey}')">DELETE</button>
-                            </div>` : ''}
-                    </div>`;
+    <div class="member-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; flex: 1;">
+            <span class="m-id" style="background: rgba(0,206,209,0.1); color: var(--teal); padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px;">
+                ${globalIndex.toString().padStart(2, '0')}
+            </span>
+            
+            <div>
+                <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px;">
+                    ${members[memberKey].name}
+                </span>
+                <small style="display:block; font-size:10px; color:#64748b; margin-left:10px; margin-top:2px;">
+                    Edited by ${displayAdminName}
+                </small>
+            </div>
+        </div>
+
+        ${isAdmin ? `
+            <div style="margin-left: 10px;">
+                <button class="btn-del" 
+                        style="background: rgba(255, 71, 71, 0.1); color: #ff4747; border: 1px solid #ff4747; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
+                        onclick="delItem('${adminKey}', '${memberKey}')">
+                    <i class="fas fa-trash-alt" style="font-size: 14px;"></i>
+                </button>
+            </div>
+        ` : ''}
+    </div>`;
+
                 globalIndex++;
             });
         });
@@ -1044,6 +1092,77 @@ function render() {
         setTimeout(initSortable, 100);
     }
 }
+// Page load hote hi Header update karein
+window.addEventListener('DOMContentLoaded', () => {
+    const savedName = localStorage.getItem("ash_admin_name");
+    // Maan lijiye aapke header mein <h2> ya koi span hai jise badalna hai
+    const headerTitle = document.querySelector('.header h2') || document.getElementById('navAdminName');
+    
+    if (savedName && headerTitle) {
+        headerTitle.innerText = savedName; // Yahan 'Admin Panel' ki jagah 'Zamir' ya 'Sojib' dikhega
+    }
+});
+
+// --- LIVE STREAM SYSTEM ---
+
+// 1. Normal link ko Player ke liye Embed link mein badalne ka logic
+function getEmbedUrl(link) {
+    if (!link) return null;
+    let videoId = "";
+    if (link.includes("v=")) videoId = link.split("v=")[1].split("&")[0];
+    else if (link.includes("be/")) videoId = link.split("be/")[1].split("?")[0];
+    else if (link.includes("embed/")) return link;
+    
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1` : null;
+}
+
+// 2. Admin side: Firebase mein save karne ka function
+function updateLiveLink() {
+    const linkInput = document.getElementById('ytAdminLink').value;
+    if (!linkInput) return showToast("Pehle link paste karein!", "error");
+
+    const finalUrl = getEmbedUrl(linkInput);
+    if (finalUrl) {
+        firebase.database().ref("liveSettings").set({
+            youtubeUrl: finalUrl
+        }).then(() => {
+            showToast("Live Updated for all members!", "success");
+            document.getElementById('ytAdminLink').value = "";
+        });
+    } else {
+        showToast("Invalid YouTube Link!", "error");
+    }
+}
+
+// 3. Member side: Firebase se link uthana aur Lifetime Save karna
+firebase.database().ref("liveSettings/youtubeUrl").on("value", (snap) => {
+    const liveUrl = snap.val();
+    const liveSection = document.getElementById('liveSection');
+    const player = document.getElementById('ytPlayer');
+
+    if (liveUrl && liveUrl.trim() !== "") {
+        if(player) player.src = liveUrl;
+        if(liveSection) liveSection.style.display = 'block';
+        
+        // Lifetime phone memory mein save karo
+        localStorage.setItem("permanent_yt_link", liveUrl);
+    } else {
+        if(liveSection) liveSection.style.display = 'none';
+    }
+});
+
+// 4. Page Load: Offline hone par bhi pichla link dikhao
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem("permanent_yt_link");
+    if (saved) {
+        const player = document.getElementById('ytPlayer');
+        const section = document.getElementById('liveSection');
+        if (player && section) {
+            player.src = saved;
+            section.style.display = 'block';
+        }
+    }
+});
 
 </script>
 
