@@ -594,6 +594,9 @@ document.addEventListener('fullscreenchange', () => {
     </div>
 </div>
 
+
+
+
 <script>
     // Firebase Config
     const firebaseConfig = {
@@ -882,21 +885,27 @@ if(localStorage.getItem('theme') === 'dark') {
 
 
 // Naya Member aur Ticket add karne ke liye
+
 function addNewMember() {
     const nameInput = document.getElementById('newMemberName');
     const name = nameInput.value.trim();
 
     if (name === "") { showToast("Name is required", "error"); return; }
 
+    // Position ke liye current time use karein
+    const pos = Date.now(); 
+
     db.child(myID).push({
         name: name,
         addedBy: myName,
+        position: pos, // Nayi line: Isse sequence yaad rahega
         timestamp: firebase.database.ServerValue.TIMESTAMP
     }).then(() => {
         showToast("Member Saved!");
         nameInput.value = "";
     });
 }
+
 
 // Live Link Update karne ke liye
 // --- YOUTUBE LIVE PLAYER LOGIC ---
@@ -1053,25 +1062,38 @@ function initSortable() {
 
     window.sortableInstance = new Sortable(el, {
         animation: 150,
-        delay: 500,             // Long press (0.5s) to start drag
+        delay: 500,
         delayOnTouchOnly: true,
-        disabled: !isAdmin,      // Only Admin can drag
+        disabled: !isAdmin,
         ghostClass: 'sortable-ghost',
-        dragClass: 'sortable-drag',
         forceFallback: true,
         
-        // Jab position change ho rahi ho (Live)
-        onChange: function() {
-            recalculateNumbers(); 
-        },
-        
-        // Jab drag khatam ho jaye
         onEnd: function() {
-            recalculateNumbers();
-            showToast("Position Updated", "success");
+            recalculateNumbers(); // Serial number theek karega
+
+            const members = el.querySelectorAll('.member-card');
+            const updates = {};
+
+            // Loop chalakar har member ki nayi position nikalna
+            members.forEach((card, index) => {
+                const memberId = card.getAttribute('data-id'); 
+                if (memberId) {
+                    // Firebase path: bigTicketGroup/AdminID/MemberID/position
+                    updates[`/${myID}/${memberId}/position`] = index;
+                }
+            });
+
+            // Firebase mein Bulk Update (Ek saath sab save)
+            db.update(updates).then(() => {
+                showToast("Sequence Saved to Cloud ✅", "success");
+            }).catch(err => {
+                showToast("Sync Error!", "error");
+            });
         }
     });
 }
+
+
 
 function recalculateNumbers() {
     // Sirf asli members ko ginein, ghost ko chhod dein
@@ -1128,8 +1150,10 @@ function render() {
             const displayAdminName = adminNames[adminKey] || adminKey;
 
             Object.keys(members).forEach(memberKey => {
+                const memberData = members[memberKey];
+                
                 container.innerHTML += `
-    <div class="member-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 10px;">
+    <div class="member-item" data-id="${memberKey}" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 10px;">
         <div style="display: flex; align-items: center; flex: 1;">
             <span class="m-id" style="background: rgba(0,206,209,0.1); color: var(--teal); padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px;">
                 ${globalIndex.toString().padStart(2, '0')}
@@ -1137,16 +1161,22 @@ function render() {
             
             <div>
                 <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px;">
-                    ${members[memberKey].name}
+                    ${memberData.name}
                 </span>
-                <small style="display:block; font-size: 0px; color:#64748b; margin-left:10px; margin-top:2px;">
+                <small style="display:block; font-size: 10px; color:#64748b; margin-left:10px; margin-top:2px;">
                     Edited by ${displayAdminName}
                 </small>
             </div>
         </div>
 
         ${isAdmin ? `
-            <div style="margin-left: 10px;">
+            <div style="display: flex; gap: 8px; margin-left: 10px;">
+                <button class="btn-edit" 
+                        style="background: rgba(77, 163, 255, 0.1); color: #4da3ff; border: 1px solid #4da3ff; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
+                        onclick="openEditModal('${adminKey}', '${memberKey}', '${memberData.name.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-edit" style="font-size: 14px;"></i>
+                </button>
+
                 <button class="btn-del" 
                         style="background: rgba(255, 71, 71, 0.1); color: #ff4747; border: 1px solid #ff4747; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
                         onclick="delItem('${adminKey}', '${memberKey}')">
@@ -1164,6 +1194,7 @@ function render() {
         setTimeout(initSortable, 100);
     }
 }
+
 // Page load hote hi Header update karein
 window.addEventListener('DOMContentLoaded', () => {
     const savedName = localStorage.getItem("ash_admin_name");
@@ -1245,23 +1276,67 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+// Modal kholne ke liye
+
+// Modal band karne ke liye
+
+// Firebase mein save karne ke liye
+
+let editRef = { aKey: null, mKey: null };
+
+function openEditModal(adminKey, memberKey, currentName) {
+    editRef.aKey = adminKey;
+    editRef.mKey = memberKey;
+    
+    // Aapke HTML mein ID 'editNameInput' hai
+    const inputField = document.getElementById('editNameInput');
+    const modal = document.getElementById('editOverlay');
+    
+    if(inputField && modal) {
+        inputField.value = currentName;
+        modal.style.display = 'flex';
+    }
+}
+
+function saveEdit() {
+    const inputField = document.getElementById('editNameInput');
+    const newName = inputField ? inputField.value.trim() : "";
+    
+    if (!newName || !editRef.mKey || !editRef.aKey) {
+        showToast("Name is required", "error");
+        return;
+    }
+
+    // Database path: bigTicketGroup -> AdminID -> MemberID
+    db.child(editRef.aKey).child(editRef.mKey).update({
+        name: newName
+    }).then(() => {
+        showToast("Member updated successfully!", "success");
+        closeModals(); // Ye function saare overlays band kar dega
+    }).catch(err => {
+        showToast("Update failed: " + err.message, "error");
+    });
+}
+
+
 </script>
 
 <div class="overlay" id="editOverlay">
     <div class="modal">
         <i class="fas fa-edit" style="font-size: 35px; color: var(--teal); margin-bottom: 15px;"></i>
         <h3>Edit Member</h3>
-        <p>नया नाम नीचे दर्ज करें</p>
+        <p>Rename</p>
         <input type="text" id="editNameInput" placeholder="Enter Name...">
         <button class="btn-modal-main" style="background: var(--teal); color: white;" onclick="saveEdit()">SAVE CHANGES</button>
         <button class="btn-modal-cancel" onclick="closeModals()">Cancel</button>
     </div>
 </div>
 
-<div class="overlay" id="deleteOverlay">
+<!-- <div class="overlay" id="deleteOverlay">
     <div class="modal">
         <h3>Confirm Delete?</h3>
-        <p>क्या आप इस मेंबर को लिस्ट से हटाना चाहते हैं?</p>
+        <p>Do you want to Remove</p>
         
         <button class="btn-modal-main" 
                 style="background: #ff4d4d; color: white;" 
@@ -1271,7 +1346,7 @@ window.addEventListener('DOMContentLoaded', () => {
         <button class="btn-modal-cancel" onclick="closeModals()">Cancel</button>
     </div>
 </div>
-
+ -->
 <div class="overlay" id="logoutOverlay" style="display: none; backdrop-filter: blur(8px);">
     <div class="modal" style="background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 20px; padding: 30px; width: 90%; max-width: 350px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         
