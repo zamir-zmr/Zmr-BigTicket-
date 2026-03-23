@@ -396,7 +396,7 @@ body.dark-mode {
     <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">Coming Soon..</h1>
         <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">BIG TICKET DRAW</h1>
 
-
+<p id="statusTxt" style="font-size: 15px; color: #999; margin: 0;"> Our Tickets</p>
         
         
         <div class="group-tickets-container">
@@ -532,7 +532,6 @@ document.addEventListener('fullscreenchange', () => {
 
         
         
-        <p id="statusTxt" style="font-size: 12px; color: #999; margin: 0;">Public View Only</p>
     </div>
 <div id="adminPanel" style="display: none; flex-direction: column; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; width: 100%; box-sizing: border-box;">
     
@@ -552,7 +551,10 @@ document.addEventListener('fullscreenchange', () => {
 
 
     <input type="text" id="searchInput" placeholder="Search names..." onkeyup="filter()" 
-           style="width:100%; padding:14px; margin-bottom:15px; border-radius:10px; border:1px solid #ddd; box-sizing:border-box;">
+           style="width:100%; padding:14px; margin-bottom:1px; border-radius:10px; border:1px solid #ddd; box-sizing:border-box;">
+
+        <p id="statusTxt" style="font-size: 12px; color: #999; margin: 1;">Ash Cafe Big Ticket Members</p>
+
 
     <div id="listContainer">
         <p style="text-align:center; color:#999;">Connecting to Database...</p>
@@ -666,7 +668,7 @@ function saveEdit() {
     const newName = document.getElementById('editNameInput').value.trim();
     if (newName) {
         db.child(currentEditKey).update({ name: newName });
-        showToast("नाम अपडेट हो गया!");
+        showToast("Name Updated");
         closeModals();
     }
 }
@@ -1137,7 +1139,7 @@ function render() {
                 <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px;">
                     ${members[memberKey].name}
                 </span>
-                <small style="display:block; font-size:10px; color:#64748b; margin-left:10px; margin-top:2px;">
+                <small style="display:block; font-size: 0px; color:#64748b; margin-left:10px; margin-top:2px;">
                     Edited by ${displayAdminName}
                 </small>
             </div>
