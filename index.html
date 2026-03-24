@@ -393,7 +393,7 @@ body.dark-mode {
     <div id="badgeTag"></div>
     <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;"></h1>
     
-    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">Coming Soon..</h1>
+    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">03 April 2026</h1>
         <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">BIG TICKET DRAW</h1>
 
 <p id="statusTxt" style="font-size: 15px; color: #999; margin: 0;"> Our Tickets</p>
@@ -403,6 +403,8 @@ body.dark-mode {
     <div class="ticket-card">🎫 <span id="t1_val">---</span></div>
     <div class="ticket-card">🎫 <span id="t2_val">---</span></div>
     <div class="ticket-card">🎫 <span id="t3_val">---</span></div>
+        <div class="ticket-card">🎫 <span id="t4_val">---</span></div>
+
 </div>
 
 
@@ -423,6 +425,11 @@ body.dark-mode {
         <input type="text" id="t3" placeholder="Ticket 3">
         <button class="btn-update-small" onclick="saveSingleTicket('t3')">SET 3</button>
     </div>
+        <div class="ticket-admin-row">
+        <input type="text" id="t4" placeholder="Ticket 4">
+        <button class="btn-update-small" onclick="saveSingleTicket('t4')">SET 4</button>
+    </div>
+
 </div>
 
 <div id="liveSection" style="display: none; width: 100%; margin-bottom: 20px;">
@@ -1036,11 +1043,15 @@ function updateTicketUI(data) {
     if(document.getElementById('t1_val')) document.getElementById('t1_val').innerText = data.t1 || "---";
     if(document.getElementById('t2_val')) document.getElementById('t2_val').innerText = data.t2 || "---";
     if(document.getElementById('t3_val')) document.getElementById('t3_val').innerText = data.t3 || "---";
+        if(document.getElementById('t4_val')) document.getElementById('t4_val').innerText = data.t4 || "---";
+
     
     // Admin input values (taki type na karna pade bar bar)
     if(document.getElementById('t1')) document.getElementById('t1').value = data.t1 || "";
     if(document.getElementById('t2')) document.getElementById('t2').value = data.t2 || "";
     if(document.getElementById('t3')) document.getElementById('t3').value = data.t3 || "";
+        if(document.getElementById('t4')) document.getElementById('t4').value = data.t4 || "";
+
 }
 
 // Page load hote hi offline data turant dikhao
@@ -1145,42 +1156,41 @@ function render() {
         Object.keys(window.allMemberData).forEach(adminKey => {
             const members = window.allMemberData[adminKey];
             
-            // LOGIC: Agar adminNames mein naam milta hai toh wo dikhao, 
-            // nahi toh jo ID (adminKey) hai wahi dikhao.
+            // LOGIC: Admin name setup
             const displayAdminName = adminNames[adminKey] || adminKey;
 
             Object.keys(members).forEach(memberKey => {
                 const memberData = members[memberKey];
                 
                 container.innerHTML += `
-    <div class="member-item" data-id="${memberKey}" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 10px;">
+    <div class="member-item" data-id="${memberKey}" style="display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; margin-bottom: 3px; background: rgba(255,255,255,0.03); border-radius: 6px;">
         <div style="display: flex; align-items: center; flex: 1;">
-            <span class="m-id" style="background: rgba(0,206,209,0.1); color: var(--teal); padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px;">
+            <span class="m-id" style="background: rgba(0,206,209,0.1); color: var(--teal); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 13px; min-width: 22px; text-align: center;">
                 ${globalIndex.toString().padStart(2, '0')}
             </span>
             
-            <div>
-                <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px;">
+            <div style="line-height: 1.2;">
+                <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px; font-size: 14px;">
                     ${memberData.name}
                 </span>
-                <small style="display:block; font-size: 10px; color:#64748b; margin-left:10px; margin-top:2px;">
-                    Edited by ${displayAdminName}
+                <small style="display:block; font-size: 0px; color:#64748b; margin-left:10px; margin-top:0px;">
+                    Edited: ${displayAdminName}
                 </small>
             </div>
         </div>
 
         ${isAdmin ? `
-            <div style="display: flex; gap: 8px; margin-left: 10px;">
+            <div style="display: flex; gap: 6px; margin-left: 10px;">
                 <button class="btn-edit" 
-                        style="background: rgba(77, 163, 255, 0.1); color: #4da3ff; border: 1px solid #4da3ff; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
+                        style="background: rgba(77, 163, 255, 0.1); color: #4da3ff; border: 1px solid #4da3ff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
                         onclick="openEditModal('${adminKey}', '${memberKey}', '${memberData.name.replace(/'/g, "\\'")}')">
-                    <i class="fas fa-edit" style="font-size: 14px;"></i>
+                    <i class="fas fa-edit" style="font-size: 13px;"></i>
                 </button>
 
                 <button class="btn-del" 
-                        style="background: rgba(255, 71, 71, 0.1); color: #ff4747; border: 1px solid #ff4747; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
+                        style="background: rgba(255, 71, 71, 0.1); color: #ff4747; border: 1px solid #ff4747; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
                         onclick="delItem('${adminKey}', '${memberKey}')">
-                    <i class="fas fa-trash-alt" style="font-size: 14px;"></i>
+                    <i class="fas fa-trash-alt" style="font-size: 13px;"></i>
                 </button>
             </div>
         ` : ''}
@@ -1190,7 +1200,7 @@ function render() {
             });
         });
 
-        // Render hone ke turant baad Sortable chalu karein
+        // Sortable initialize
         setTimeout(initSortable, 100);
     }
 }
@@ -1324,7 +1334,6 @@ function saveEdit() {
 
 <div class="overlay" id="editOverlay">
     <div class="modal">
-        <i class="fas fa-edit" style="font-size: 35px; color: var(--teal); margin-bottom: 15px;"></i>
         <h3>Edit Member</h3>
         <p>Rename</p>
         <input type="text" id="editNameInput" placeholder="Enter Name...">
@@ -1333,20 +1342,6 @@ function saveEdit() {
     </div>
 </div>
 
-<!-- <div class="overlay" id="deleteOverlay">
-    <div class="modal">
-        <h3>Confirm Delete?</h3>
-        <p>Do you want to Remove</p>
-        
-        <button class="btn-modal-main" 
-                style="background: #ff4d4d; color: white;" 
-                onclick="confirmDelete()"> YES, DELETE
-        </button>
-        
-        <button class="btn-modal-cancel" onclick="closeModals()">Cancel</button>
-    </div>
-</div>
- -->
 <div class="overlay" id="logoutOverlay" style="display: none; backdrop-filter: blur(8px);">
     <div class="modal" style="background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 20px; padding: 30px; width: 90%; max-width: 350px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         
