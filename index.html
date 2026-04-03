@@ -449,6 +449,23 @@ body.dark-mode {
     </div>
 </div>
 
+<div id="photoSection" style="display: none; width: 100%; margin-bottom: 20px; text-align: center;">
+    <div style="background: #1e293b; padding: 10px; border-radius: 12px; border: 1px solid var(--teal); box-shadow: 0 4px 15px rgba(0,206,209,0.2);">
+        <img id="liveImageDisplay" src="" style="width: 100%; border-radius: 8px; display: block;">
+        <p style="color: var(--teal); font-size: 11px; font-weight: bold; margin-top: 8px; text-transform: uppercase;">
+            <i class="fas fa-image"></i> Official Update
+        </p>
+    </div>
+</div>
+
+<p style="color: #ffcc00; font-size: 12px; margin: 15px 0 10px 0; font-weight: bold;">UPDATE LIVE PHOTO</p>
+<div class="admin-horizontal-row">
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="uploadImage()">
+    <button class="btn-action-small" style="background: #ffcc00; color: #000; flex: 2;" onclick="document.getElementById('imageInput').click()">
+        <i class="fas fa-camera"></i> CHOOSE FROM GALLERY
+    </button>
+    <button id="clearPhotoBtn" class="btn-action-small" style="background: #334155; flex: 1;" onclick="clearPhoto()">REMOVE</button>
+</div>
 
 
 <script>
@@ -1328,6 +1345,67 @@ function saveEdit() {
         showToast("Update failed: " + err.message, "error");
     });
 }
+
+// --- LIVE PHOTO SYSTEM ---
+
+// 1. Upload Logic (Admin Only)
+function uploadImage() {
+    const file = document.getElementById('imageInput').files[0];
+    if (!file) return;
+
+    showToast("Processing Image...", "success");
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Image = e.target.result;
+        
+        // Firebase mein save karein
+        firebase.database().ref("liveSettings/photoUrl").set(base64Image)
+        .then(() => {
+            showToast("Photo Updated Live!", "success");
+            localStorage.setItem("permanent_live_photo", base64Image);
+        })
+        .catch(err => showToast("Upload Failed", "error"));
+    };
+    reader.readAsDataURL(file);
+}
+
+// 2. Clear Photo Logic
+function clearPhoto() {
+    firebase.database().ref("liveSettings/photoUrl").set("")
+    .then(() => {
+        showToast("Photo Removed", "error");
+        localStorage.removeItem("permanent_live_photo");
+    });
+}
+
+// 3. Listener (Guest & Admin dono ke liye)
+firebase.database().ref("liveSettings/photoUrl").on("value", (snap) => {
+    const imgData = snap.val();
+    const photoSection = document.getElementById('photoSection');
+    const displayImg = document.getElementById('liveImageDisplay');
+
+    if (imgData && imgData.trim() !== "") {
+        if(displayImg) displayImg.src = imgData;
+        if(photoSection) photoSection.style.display = 'block';
+        localStorage.setItem("permanent_live_photo", imgData);
+    } else {
+        if(photoSection) photoSection.style.display = 'none';
+    }
+});
+
+// 4. Page Load (Offline Support)
+window.addEventListener('DOMContentLoaded', () => {
+    const savedPhoto = localStorage.getItem("permanent_live_photo");
+    if (savedPhoto) {
+        const photoSection = document.getElementById('photoSection');
+        const displayImg = document.getElementById('liveImageDisplay');
+        if (photoSection && displayImg) {
+            displayImg.src = savedPhoto;
+            photoSection.style.display = 'block';
+        }
+    }
+});
 
 
 </script>
