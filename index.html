@@ -10,7 +10,8 @@
     <title>Ash Cafe | Big Ticket</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
         :root {
@@ -370,6 +371,29 @@ body.dark-mode {
     margin-left: 10px;
 }
 
+/* Multi-Select Styles */
+.member-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    accent-color: #ff4d4d;
+    cursor: pointer;
+    display: none; /* Default mein hide rahega, Admin mode mein dikhega */
+}
+
+#multiDeleteBtn {
+    display: none;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
+}
 
 
     </style>
@@ -393,13 +417,13 @@ body.dark-mode {
     <div id="badgeTag"></div>
     <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;"></h1>
     
-    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">03 April 2026</h1>
+    <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">03 May 2026</h1>
         <h1 id="navAdminName" style="font-size: 20px; color: #d20000; margin: 5px 0;">BIG TICKET DRAW</h1>
 
 <p id="statusTxt" style="font-size: 15px; color: #999; margin: 0;"> Our Tickets</p>
-<p id="statusTxt" style="font-size: 18px; color: #ff0404c6; margin: 0;">Lost This Month
+<!-- <p id="statusTxt" style="font-size: 18px; color: #ff0404c6; margin: 0;">Lost This Month
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</p>
-
+ -->
         
         
         <div class="group-tickets-container">
@@ -452,10 +476,10 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</p>
 
     ">
         <span style="color: #ff4d4d; font-size: 31px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
-            <i class="fas fa-circle" style="font-size: 18px; vertical-align: 
-            middle; animation: blink 1s infinite;"></i> RESULT
+<!--             <i class="fas fa-circle" style="font-size: 18px; vertical-align: 
         </span>
-    </div>
+middle; animation: blink 1s infinite;"></i> RESULT
+    </div> -->
 
  <div id="photoSection" style="display: none; width: 100%; margin-bottom: 20px; text-align: center;">
     <div style="background: #1e293b; padding: 10px; border-radius: 12px; border: 1px solid var(--teal); box-shadow: 0 4px 15px rgba(0,206,209,0.2);">
@@ -466,7 +490,8 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</p>
     </div>
 </div>
 
-<p style="color: #ff0404c6; font-size: 18px; margin: 15px 0 10px 0; font-weight: bold;">UPDATED RESULT</p>
+<!-- <p style="color: #ff0404c6; font-size: 18px; margin: 15px 0 10px 0; font-weight: bold;">UPDATED RESULT</p>
+ -->
 <!-- <div class="admin-horizontal-row">
     <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="uploadImage()">
     <button class="btn-action-small" style="background: #ffcc00; color: #000; flex: 2;" onclick="document.getElementById('imageInput').click()">
@@ -548,6 +573,63 @@ document.addEventListener('fullscreenchange', () => {
 // 5. Initial Load (Lifetime Support)
 
 
+// JSON Import Function
+function importJSONData() {
+    const jsonInput = document.getElementById('jsonBackupInput').value.trim();
+    if (!jsonInput) return showToast("Please paste JSON data!", "error");
+
+    try {
+        const data = JSON.parse(jsonInput);
+        if (!Array.isArray(data)) {
+            showToast("Invalid Format: Must be an Array []", "error");
+            return;
+        }
+
+        if (confirm(`Are you sure? This will add ${data.length} members to your list.`)) {
+            const updates = {};
+            const timestamp = Date.now();
+
+            data.forEach((item, index) => {
+                if (item.name) {
+                    // Naya unique key generate karna
+                    const newMemberKey = db.child(myID).push().key;
+                    
+                    // Har member ko position aur name dena taki serial line se aaye
+                    updates[`/${myID}/${newMemberKey}`] = {
+                        name: item.name,
+                        addedBy: myName,
+                        position: timestamp + index, // Automatic ordering
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    };
+                }
+            });
+
+            db.update(updates).then(() => {
+                showToast("List Restored Successfully!", "success");
+                document.getElementById('jsonBackupInput').value = "";
+            }).catch(err => {
+                showToast("Firebase Error: " + err.message, "error");
+            });
+        }
+    } catch (e) {
+        showToast("Invalid JSON: Check brackets or commas", "error");
+    }
+}
+
+// ✅ PUBLIC JSON IMPORT - Koi bhi use kar sakta hai
+
+
+// Admin enable hone par backup section dikhane ke liye enableAdmin update karein
+function enableAdmin() {
+    isAdmin = true;
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('ticketAdmin').style.display = 'block';
+    document.getElementById('backupSection').style.display = 'block'; // Nayi line
+    if(document.getElementById('badgeTag')) {
+        document.getElementById('badgeTag').innerHTML = `<span class="admin-badge">${myID}</span>`;
+    }
+    render();
+}
 
 
 </script>
@@ -583,9 +665,43 @@ document.addEventListener('fullscreenchange', () => {
 
 
     <input type="text" id="searchInput" placeholder="Search names..." onkeyup="filter()" 
-           style="width:100%; padding:14px; margin-bottom:1px; border-radius:10px; border:1px solid #ddd; box-sizing:border-box;">
+       style="width:100%; padding:14px; margin-bottom:1px; border-radius:10px; border:1px solid #ddd; box-sizing:border-box;">
+
+<!-- ✅ PUBLIC JSON IMPORT SECTION - Search ke neeche -->
+
+
+<div id="backupSection" style="display: none; background: #1e293b; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #ffcc00; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.1);">
+    <p style="color: #ffcc00; font-size: 12px; margin-bottom: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-database"></i> BACKUP / RESTORE MEMBERS (JSON)
+    </p>
+    <textarea id="jsonBackupInput" placeholder='Paste JSON here... Example: [{"name":"Zamir"}]' 
+              style="width: 100%; height: 80px; background: #0f172a; color: #00ced1; border: 1px solid #334155; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; outline: none;"></textarea>
+    
+    <button class="btn-action-small" style="background: #ffcc00; color: #000; width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; height: 45px; border-radius: 8px;" onclick="importJSONData()">
+        <i class="fas fa-file-import"></i> RESTORE LIST FROM JSON
+    </button>
+</div>
+
+<button id="bulkDeleteBtn" onclick="deleteSelectedMembers()" style="display: none; width:100%; background:#ff4747; color:white; border:none; padding:12px; border-radius:10px; margin-top:10px; font-weight:bold; cursor:pointer;">
+    <i class="fas fa-trash-alt"></i> DELETE SELECTED ENTRIES
+</button>
+
+
 
         <p id="statusTxt" style="font-size: 12px; color: #999; margin: 1;">Ash Cafe Big Ticket Members</p>
+
+
+<div id="backupSection" style="display: none; background: #1e293b; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #ffcc00;">
+    <p style="color: #ffcc00; font-size: 12px; margin-bottom: 8px; font-weight: bold;">
+        <i class="fas fa-database"></i> BACKUP / RESTORE MEMBERS (JSON)
+    </p>
+    <textarea id="jsonBackupInput" placeholder='Paste JSON here...' 
+              style="width: 100%; height: 80px; background: #0f172a; color: #00ced1; border: 1px solid #334155; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; outline: none;"></textarea>
+    
+    <button class="btn-action-small" style="background: #ffcc00; color: #000; width: 100%; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="importJSONData()">
+        <i class="fas fa-file-import"></i> RESTORE LIST FROM JSON
+    </button>
+</div>
 
 
     <div id="listContainer">
@@ -688,6 +804,77 @@ function confirmDelete() {
 
 // 3. YouTube Live Embed Logic (Taki screen par video chale)
 
+let pressTimer;
+let selectedMembers = new Set(); // Ticked members ki list
+let isSelectionMode = false;
+
+function startPress(id) {
+    pressTimer = window.setTimeout(() => {
+        isSelectionMode = true;
+        toggleSelection(id);
+        navigator.vibrate(50); // Haptic feedback (optional)
+    }, 800); // 0.8 second long press
+}
+
+function endPress() {
+    clearTimeout(pressTimer);
+}
+
+function handleMemberClick(id) {
+    if (isSelectionMode) {
+        toggleSelection(id);
+    }
+}
+
+function toggleSelection(id) {
+    if (!isAdmin) return; // Guest ke liye block karein
+
+    const item = document.getElementById('item-' + id);
+    const checkbox = document.getElementById('check-' + id);
+    const bulkBtn = document.getElementById('bulkDeleteBtn');
+    
+    if (selectedMembers.has(id)) {
+        selectedMembers.delete(id);
+        if(item) item.style.background = "rgba(255,255,255,0.03)";
+        if(checkbox) checkbox.checked = false;
+    } else {
+        selectedMembers.add(id);
+        if(item) item.style.background = "rgba(255, 71, 71, 0.15)";
+        if(checkbox) checkbox.checked = true;
+    }
+    
+    // Agar koi select hai toh button show karein, varna hide
+    if (selectedMembers.size > 0) {
+        if(bulkBtn) bulkBtn.style.display = 'block';
+    } else {
+        isSelectionMode = false;
+        if(bulkBtn) bulkBtn.style.display = 'none';
+    }
+}
+
+
+
+// Bulk Delete Function Update
+async function deleteSelectedMembers() {
+    if (selectedMembers.size === 0) return showToast("Pehle members ko select karein!", "error");
+
+    if (confirm(`Delete ${selectedMembers.size} members?`)) {
+        const updates = {};
+        selectedMembers.forEach(memberKey => {
+            // Yahan apne Firebase path ke hisaab se adminKey manage karein
+            updates[`/${myID}/${memberKey}`] = null; 
+        });
+
+        try {
+            await db.update(updates);
+            selectedMembers.clear();
+            isSelectionMode = false;
+            showToast("Success!", "success");
+        } catch (e) {
+            showToast("Error: " + e.message, "error");
+        }
+    }
+}
 
 
 
@@ -794,13 +981,25 @@ function attemptLogin() {
 }
 
 
+
 function enableAdmin() {
-    isAdmin = false;
-    // 'flex' ki jagah 'block' ya 'flex' jo bhi aapne id par lagaya hai
-    document.getElementById('adminPanel').style.display = 'block'; 
-    document.getElementById('ticketAdmin').style.display = 'block';
+    isAdmin = true; 
+    // Saare Admin panels ko show karein
+    document.getElementById('adminPanel').style.display = 'flex';
+    document.getElementById('ticketAdmin').style.display = 'flex';
+    
+    // BACKUP SECTION KO YAHAN SHOW KARNA JARURI HAI
+    const backupBox = document.getElementById('backupSection');
+    if(backupBox) {
+        backupBox.style.display = 'block'; 
+    }
+
+    if(document.getElementById('badgeTag')) {
+        document.getElementById('badgeTag').innerHTML = `<span class="admin-badge">${myID}</span>`;
+    }
     render();
 }
+
 
 
 // सुरक्षा बटन दबाने पर क्या होगा
@@ -864,14 +1063,33 @@ function confirmLogout() {
 
 
 function logoutSystem() {
-    // प्रोफेशनल मैसेज दिखाएं
+    // 1. Admin status band karein
+    isAdmin = false;
+    isSelectionMode = false;
+
+    // 2. Selection clear karein
+    if (typeof selectedMembers !== 'undefined') {
+        selectedMembers.clear();
+    }
+
+    // 3. UI Elements ko chhupayein
+    const bulkBtn = document.getElementById('bulkDeleteBtn');
+    const backupBox = document.getElementById('backupSection');
+    const adminPanel = document.getElementById('adminPanel');
+
+    if (bulkBtn) bulkBtn.style.display = 'none';
+    if (backupBox) backupBox.style.display = 'none';
+    if (adminPanel) adminPanel.style.display = 'none';
+
+    // 4. Message dikhayein
     showToast("Logging out successfully!", "error"); 
-    
-    // थोड़ा इंतज़ार करें ताकि यूजर मैसेज देख सके, फिर क्लियर करें
+
+    // 5. Thoda wait karke reset karein
     setTimeout(() => {
         localStorage.clear();
+        // Page reload karne se saara state fresh (Guest mode) ho jayega
         location.reload();
-    }, 1500);
+    }, 1200);
 }
 
     // 3. Database Rendering
@@ -1170,65 +1388,78 @@ function updateListNumbers() {
 // Yahan aap apni zaroorat ke hisaab se naam add kar sakte hain
 
 // 3. Render function mein update
-
 function render() {
     const container = document.getElementById('listContainer');
     if (!container) return;
     container.innerHTML = "";
     
+    // Admin login ke bina selection mode reset rakhen
+    if (!isAdmin) {
+        selectedMembers.clear();
+        isSelectionMode = false;
+        const bulkBtn = document.getElementById('bulkDeleteBtn');
+        if(bulkBtn) bulkBtn.style.display = 'none';
+    }
+
     if (window.allMemberData) {
         let globalIndex = 1;
         Object.keys(window.allMemberData).forEach(adminKey => {
             const members = window.allMemberData[adminKey];
-            
-            // LOGIC: Admin name setup
-            const displayAdminName = adminNames[adminKey] || adminKey;
 
             Object.keys(members).forEach(memberKey => {
                 const memberData = members[memberKey];
                 
+                // Sirf Admin ke liye checkbox aur highlight logic
+                const isChecked = (isAdmin && selectedMembers.has(memberKey)) ? 'checked' : '';
+                const bgStyle = (isAdmin && selectedMembers.has(memberKey)) ? 'rgba(255, 71, 71, 0.15)' : 'rgba(255,255,255,0.03)';
+
+                let checkboxHTML = isAdmin ? `
+                    <input type="checkbox" class="member-checkbox" 
+                           id="check-${memberKey}"
+                           value="${memberKey}" 
+                           data-admin="${adminKey}" 
+                           ${isChecked}
+                           style="width: 20px; height: 20px; margin-right: 12px; accent-color: #ff4747; pointer-events: none;">
+                ` : '';
+
                 container.innerHTML += `
-    <div class="member-item" data-id="${memberKey}" style="display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; margin-bottom: 3px; background: rgba(255,255,255,0.03); border-radius: 6px;">
-        <div style="display: flex; align-items: center; flex: 1;">
+    <div class="member-item" 
+         id="item-${memberKey}"
+         onmousedown="${isAdmin ? `startPress('${memberKey}')` : ''}" 
+         onmouseup="endPress()" 
+         ontouchstart="${isAdmin ? `startPress('${memberKey}')` : ''}" 
+         ontouchend="endPress()"
+         onclick="${isAdmin ? `handleMemberClick('${memberKey}')` : ''}"
+         style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 5px; background: ${bgStyle}; border-radius: 8px; transition: 0.3s; cursor: ${isAdmin ? 'pointer' : 'default'};">
+        
+        <div style="display: flex; align-items: center; flex: 1; pointer-events: none;">
+            ${checkboxHTML}
             <span class="m-id" style="background: rgba(0,206,209,0.1); color: var(--teal); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 13px; min-width: 22px; text-align: center;">
                 ${globalIndex.toString().padStart(2, '0')}
             </span>
-            
-            <div style="line-height: 1.2;">
-                <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px; font-size: 14px;">
-                    ${memberData.name}
-                </span>
-                <small style="display:block; font-size: 0px; color:#64748b; margin-left:10px; margin-top:0px;">
-                    Edited: ${displayAdminName}
-                </small>
-            </div>
+            <span class="m-name" style="color: var(--teal); font-weight: 600; margin-left: 10px; font-size: 14px;">
+                ${memberData.name}
+            </span>
         </div>
 
         ${isAdmin ? `
             <div style="display: flex; gap: 6px; margin-left: 10px;">
-                <button class="btn-edit" 
-                        style="background: rgba(77, 163, 255, 0.1); color: #4da3ff; border: 1px solid #4da3ff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
-                        onclick="openEditModal('${adminKey}', '${memberKey}', '${memberData.name.replace(/'/g, "\\'")}')">
-                    <i class="fas fa-edit" style="font-size: 13px;"></i>
+                <button class="btn-edit" onclick="event.stopPropagation(); openEditModal('${adminKey}', '${memberKey}', '${memberData.name.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-edit"></i>
                 </button>
-
-                <button class="btn-del" 
-                        style="background: rgba(255, 71, 71, 0.1); color: #ff4747; border: 1px solid #ff4747; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" 
-                        onclick="delItem('${adminKey}', '${memberKey}')">
-                    <i class="fas fa-trash-alt" style="font-size: 13px;"></i>
+                <button class="btn-del" onclick="event.stopPropagation(); delItem('${adminKey}', '${memberKey}')">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
         ` : ''}
     </div>`;
-
                 globalIndex++;
             });
         });
-
-        // Sortable initialize
-        setTimeout(initSortable, 100);
+        if (typeof initSortable === 'function') setTimeout(initSortable, 100);
     }
 }
+
 
 // Page load hote hi Header update karein
 window.addEventListener('DOMContentLoaded', () => {
@@ -1415,6 +1646,41 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+async function deleteSelectedMembers() {
+    const checkboxes = document.querySelectorAll('.member-checkbox:checked');
+    if (checkboxes.length === 0) {
+        return showToast("Pehle members select karein!", "error");
+    }
+
+    if (confirm(`Kya aap in ${checkboxes.length} members ko delete karna chahte hain?`)) {
+        const updates = {};
+        checkboxes.forEach(cb => {
+            updates[`/${myID}/${cb.value}`] = null; // Firebase se delete karne ke liye null set karein
+        });
+
+        try {
+            await db.update(updates);
+            showToast("Selected members deleted!", "success");
+            document.getElementById('multiDeleteBtn').style.display = 'none';
+        } catch (error) {
+            showToast("Error: " + error.message, "error");
+        }
+    }
+}
+
+// Admin enable hone par delete button show karne ke liye logic
+function enableAdmin() {
+    isAdmin = true;
+    document.getElementById('adminPanel').style.display = 'flex';
+    document.getElementById('ticketAdmin').style.display = 'flex';
+    document.getElementById('backupSection').style.display = 'block';
+    
+    // Delete button dikhayen
+    const delBtn = document.getElementById('multiDeleteBtn');
+    if(delBtn) delBtn.style.display = 'block';
+
+    render(); // Dubara render karein taki checkboxes dikhne lagein
+}
 
 </script>
 
